@@ -20,13 +20,14 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(realsense2 REQUIRED)
+find_package(i2cpwm_board_msgs REQUIRED)
+# find_package(realsense2 REQUIRED)
 
-if(NOT realsense2_FOUND)
-  message(FATAL_ERROR "\n\n Intel RealSense SDK 2.0 is missing, please install it from https://github.com/IntelRealSense/librealsense/releases\n\n")
-endif()
+# if(NOT realsense2_FOUND)
+#   message(FATAL_ERROR "\n\n Intel RealSense SDK 2.0 is missing, please install it from https://github.com/IntelRealSense/librealsense/releases\n\n")
+# endif()
 
-# custom message
+# # custom message
 set(msg_files
   "msg/Joy2.msg"
 )
@@ -40,29 +41,29 @@ ament_export_dependencies(rosidl_default_runtime) # for custom message
 # My Realsense Wrapper library
 include_directories(rs_wrapper_lib include/rs_wrapper_lib)
 set(RS_WRAPPER_HEADER_FILES include/rs_wrapper_lib/rs_wrapper_lib.hpp)
-add_library(rs_wrapper_lib src/rs_wrapper_lib.cpp ${RS_WRAPPER_HEADER_FILES})
-ament_export_targets(rs_wrapper_lib HAS_LIBRARY_TARGET)
-install(
-  DIRECTORY include/rs_wrapper_lib
-  DESTINATION include
-)
-install(
-  TARGETS rs_wrapper_lib
-  EXPORT rs_wrapper_lib
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include/rs_wrapper_lib
-)
+# add_library(rs_wrapper_lib src/rs_wrapper_lib.cpp ${RS_WRAPPER_HEADER_FILES})
+# ament_export_targets(rs_wrapper_lib HAS_LIBRARY_TARGET)
+# install(
+#   DIRECTORY include/rs_wrapper_lib
+#   DESTINATION include
+# )
+# install(
+#   TARGETS rs_wrapper_lib
+#   EXPORT rs_wrapper_lib
+#   LIBRARY DESTINATION lib
+#   ARCHIVE DESTINATION lib
+#   RUNTIME DESTINATION bin
+#   INCLUDES DESTINATION include/rs_wrapper_lib
+# )
 
 # executable
 add_executable(joy src/joy.cpp)
 ament_target_dependencies(joy rclcpp)
 
 # executable
-add_executable(realsense src/realsense.cpp)
-target_link_libraries(realsense ${realsense2_LIBRARY})
-ament_target_dependencies(realsense rclcpp nav_msgs realsense2)
+# add_executable(realsense src/realsense.cpp)
+# target_link_libraries(realsense ${realsense2_LIBRARY})
+# ament_target_dependencies(realsense rclcpp nav_msgs realsense2)
 
 # expose the custom message types inside this package
 # I think it is not required when the custom messages are used in different package
@@ -73,14 +74,21 @@ rosidl_target_interfaces(joy
 add_executable(pca9685 src/pca9685.cpp)
 ament_target_dependencies(pca9685 rclcpp)
 
+add_executable(pca9685_board src/pca9685_board.cpp)
+ament_target_dependencies(pca9685_board rclcpp)
+
 rosidl_target_interfaces(pca9685
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+rosidl_target_interfaces(pca9685_board
   ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
 install(TARGETS
   joy
   pca9685
-  realsense
+  pca9685_board
+  # realsense
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -96,23 +104,23 @@ if(BUILD_TESTING)
   # uncomment the line when this package is not in a git repo
   #set(ament_cmake_cpplint_FOUND TRUE)
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(${PROJECT_NAME}_test test/realsense_test.cpp test/rs_wrapper_lib_test.cpp)
-  target_include_directories(${PROJECT_NAME}_test PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-  )
-  ament_target_dependencies(${PROJECT_NAME}_test
-    realsense2
-  )
-  target_link_libraries(${PROJECT_NAME}_test
-    ${realsense2_LIBRARY}
-    rs_wrapper_lib
-  )
-  install (TARGETS
-    ${PROJECT_NAME}_test
-    DESTINATION lib/${PROJECT_NAME}
-  )
-  # ament_lint_auto_find_test_dependencies()
+  # ament_add_gtest(${PROJECT_NAME}_test test/realsense_test.cpp test/rs_wrapper_lib_test.cpp)
+  # target_include_directories(${PROJECT_NAME}_test PUBLIC0
+  #   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  #   $<INSTALL_INTERFACE:include>
+  # )
+  # # ament_target_dependencies(${PROJECT_NAME}_test
+  #   realsense2
+  # )
+  # target_link_libraries(${PROJECT_NAME}_test
+  #   ${realsense2_LIBRARY}
+  #   rs_wrapper_lib
+  # )
+  # install (TARGETS
+  #   ${PROJECT_NAME}_test
+  #   DESTINATION lib/${PROJECT_NAME}
+  # )
+  # # ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_package()

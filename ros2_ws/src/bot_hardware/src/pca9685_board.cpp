@@ -5,6 +5,8 @@
 #include <sys/ioctl.h>
 #include "rclcpp/rclcpp.hpp"
 #include "bot_hardware/msg/joy2.hpp"
+// #include "i2cpwm_board_msgs/msg/ServoArray.hpp" // new
+#include "geometry_msgs/msg/twist.hpp" // new
 
 using std::placeholders::_1;
 
@@ -60,9 +62,39 @@ public:
   PCA9685() : Node("pca9685")
   {
     init_hardware();
+
+    // Initialize subscriptions
     js_subscription_ = this->create_subscription<bot_hardware::msg::Joy2>(
         "/joy", 10, std::bind(&PCA9685::js_callback, this, _1));
+
+    // abs_subscription_ = this->create_subscription<i2cpwm_board_msgs::msg::ServoArray>("/servos_absolute", 10, std::bind(&PCA9685::abs_callback, this, _1));
+    // drive_subscription_ = this->create_subscription<geometry_msgs::msg::Twist>("/servos_drive", 10, std::bind(&PCA9685::drive_callback, this, _1));
+    // rel_subscription_ = this->create_subscription<i2cpwm_board_msgs::msg::ServoArray>("/servos_proportional", 10, std::bind(&PCA9685::rel_callback, this, _1));
   }
+
+  // new
+  // void abs_callback(const i2cpwm_board_msgs::msg::ServoArray::SharedPtr msg)
+  // {
+  //     for (const auto &servo : msg->servos)
+  //     {
+  //         set_pwm(servo.servo, 0, servo.value);
+  //     }
+  // }
+
+  // void drive_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
+  // {
+  //     float throttle = msg->linear.x;
+  //     float steering = msg->angular.z;
+  //     setThrottle(throttle);
+  //     setSteering(steering);
+  // }
+
+  // void rel_callback(const i2cpwm_board_msgs::msg::ServoArray::SharedPtr msg)
+  // {
+  //     // Implement your own logic here to handle proportional commands
+  // }
+  // new
+
 
   ~PCA9685()
   {
@@ -188,6 +220,12 @@ private:
   }
 
   rclcpp::Subscription<bot_hardware::msg::Joy2>::SharedPtr js_subscription_;
+  // new
+  // rclcpp::Subscription<i2cpwm_board_msgs::msg::ServoArray>::SharedPtr abs_subscription_;
+  // rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr drive_subscription_;
+  // rclcpp::Subscription<i2cpwm_board_msgs::msg::ServoArray>::SharedPtr rel_subscription_;
+  // new
+
   int i2c_fd_;
   uint8_t dev_address_;
   float pwm_freq_;
